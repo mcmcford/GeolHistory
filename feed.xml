@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>    <rss version='2.0' xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>GeolHistory Articles</title>
+        <link>https://geolhistory.org/articles</link>
+        <atom:link href="https://geolhistory.org/rss/articles.php" rel="self" type="application/rss+xml" />
+        <description>GeolHistory Articles</description>
+        <language>en-us</language>
+        <copyright>CC BY-SA 4.0 International</copyright>
+        <image>
+            <url>https://service.lmwn.co.uk/brandkit/geolhistory/icon.png</url>
+            <title>GeolHistory Articles</title>
+            <link>https://geolhistory.org/articles</link>
+        </image>    	<item>
+            <title>Welcome</title>
+            <link>https://geolhistory.org/articles/read.php?id=1</link>
+            <description>Welcome to our Articles Section of GeolHistory. Here you&apos;ll find articles written by our amazing writing team about geological news, events and just about anything else that doesn&apos;t fit into one of our existing pages. These articles are written, referenced and checked entirely by the writer who&apos;s name is displayed in the article&apos;s header, so make sure to credit them if you use their work... Read more at GeolHistory.org, released under CC-BY-SA 4.0 License.</description>
+            <author>contact@geolhistory.org (Ben Mackley)</author>
+            <guid isPermaLink="true">https://geolhistory.org/articles/read.php?id=1</guid>
+        </item>
+            	<item>
+            <title>Metamorphic Rocks</title>
+            <link>https://geolhistory.org/articles/read.php?id=2</link>
+            <description>Metamorphism is the term used to describe the recrystallisation of minerals in rocks. This always occurs at solid state and the changes are isocheimal, meaning that no elements are added or removed (apart from volatiles e.g. carbon dioxide and water). There are three types of metamorphism:Regional metamorphism, which requires both heat and pressure.Contact metamorphism, which requires JUST heat.Dynamic metamorphism, which occurs at fault zones, where friction between the rocks create heat... Read more at GeolHistory.org, released under CC-BY-SA 4.0 License.</description>
+            <author>contact@geolhistory.org (Alice Forshaw)</author>
+            <guid isPermaLink="true">https://geolhistory.org/articles/read.php?id=2</guid>
+        </item>
+        
+    </channel>
+</rss>
