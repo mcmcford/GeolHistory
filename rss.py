@@ -25,6 +25,7 @@ db = sqlite3.connect('GeolHistory.db')
 cursor = db.cursor()
 cursor.execute('CREATE TABLE IF NOT EXISTS articles(message_id TEXT primary key, title TEXT, link TEXT, description TEXT, author TEXT, image TEXT)')
 cursor.execute('CREATE TABLE IF NOT EXISTS config(value TEXT primary key, value_key TEXT, description TEXT)')
+cursor.execute('CREATE TABLE IF NOT EXISTS rules(number TEXT primary key,  description TEXT)')
 
 
 # setting bot prefix
@@ -48,6 +49,181 @@ async def ping(ctx):
     latency = round(latency)
     await ctx.send("My ping is **{}ms**!".format(latency))
 
+#summon a rulefor the bot
+@bot.command()
+async def rule(ctx): 
+    try:
+        #delete the senders message
+        await ctx.message.delete()
+    except Exception:
+        print("not deleting message due to it being in a DM")
+    
+    try:
+        split_command = ctx.message.content.split()
+        del split_command[0]
+        
+        #join the message back together
+        ruleNumber = " ".join(split_command)
+        
+        if len(ruleNumber) < 1:
+            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!rule {rule}` eg. `!rule 5` ")
+        
+        else:
+            #query see how many rules exist
+            cursor.execute("SELECT number,description FROM rules WHERE number=(?)",(ruleNumber,))
+            query = cursor.fetchall()
+            number_of_rules_named_that = len(query)
+            
+            cursor.execute("SELECT value_key FROM config WHERE value = ?",("rules_channel",))
+            rule_channel_ID_array = cursor.fetchone()
+            
+            #getting the nickname of the person who ran the command / made the quote
+            userValue = await bot.fetch_user((ctx.message.author).id)
+            summonersName = userValue.name
+            
+            if number_of_rules_named_that < 1:
+                await ctx.send("The rule " + ruleNumber + " does not exist. To see what rules you can summon with this command, please see <#" + rule_channel_ID_array[0] + ">", delete_after=10.0)
+            else:
+                embed = discord.Embed(name="help",title="Rule " + str(query[0][0]),description=str(query[0][1]), timestamp=datetime.datetime.utcnow(), color=0x28a4fd)
+                embed.set_footer(text = "summoned by: " + summonersName)
+                await ctx.send(embed=embed)
+    except:
+        Send = await ctx.send("Please ensure you have formatted the command correctly\n`!rule {rule}` eg. `!rule 5` ")
+
+#delete a rule
+@bot.command()
+async def delrule(ctx): 
+    
+    try:
+        #delete the senders message
+        await ctx.message.delete()
+    except Exception:
+        print("not deleting message due to it being in a DM")
+    
+    #get admin IDs from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
+    admin_ids = cursor.fetchone()
+    admin_ids_array = str(admin_ids[0]).split(",")
+    
+    #get lead admins ID from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
+    leadAdmin = cursor.fetchone()
+    
+    #get owners ID from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
+    ownerID = cursor.fetchone()
+    
+    allowed = False
+    owner = False
+    
+    for x in admin_ids_array:
+        if x == str((ctx.message.author).id):
+            allowed = True
+    
+    if str((ctx.message.author).id) == ownerID[0]:
+        allowed = True
+        owner = True
+    elif str((ctx.message.author).id) == leadAdmin[0]:
+        allowed = True
+    
+    if allowed == True:
+        try:
+            split_command = ctx.message.content.split()
+            del split_command[0]
+            rule_number = split_command[0] 
+            
+            #find if rule is in the db already
+            cursor.execute("SELECT count(*) FROM rules WHERE number = ?",(rule_number,))
+            find = cursor.fetchone()[0]
+
+            if find>0:
+                cursor.execute("DELETE FROM rules WHERE number = " + rule_number)
+                db.commit()
+                await ctx.send("The rule " + rule_number + " has been deleted", delete_after=6.0)
+            
+            else:
+                
+                await ctx.send("That rule ID (" + rule_number + ") doesn't exist, please use an existing one or create rule " + rule_number + ".", delete_after=6.0)
+                return
+        except:
+            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!delrule {id} {description}` eg. `!delrule 15`")
+            traceback.print_exc()
+    else:
+        Send = await ctx.send("You don't have permission to use the command `delrule`")
+
+    
+    
+    
+#add a rule
+@bot.command()
+async def addrule(ctx): 
+    
+    try:
+        #delete the senders message
+        await ctx.message.delete()
+    except Exception:
+        print("not deleting message due to it being in a DM")
+    
+    #get admin IDs from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
+    admin_ids = cursor.fetchone()
+    admin_ids_array = str(admin_ids[0]).split(",")
+    
+    #get lead admins ID from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
+    leadAdmin = cursor.fetchone()
+    
+    #get owners ID from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
+    ownerID = cursor.fetchone()
+    
+    allowed = False
+    owner = False
+    
+    for x in admin_ids_array:
+        if x == str((ctx.message.author).id):
+            allowed = True
+    
+    if str((ctx.message.author).id) == ownerID[0]:
+        allowed = True
+        owner = True
+    elif str((ctx.message.author).id) == leadAdmin[0]:
+        allowed = True
+    
+    if allowed == True:
+        try:
+            split_command = ctx.message.content.split()
+            del split_command[0]
+            rule_number = split_command[0]
+            del split_command[0]
+            
+            #find if rule is in the db already
+            cursor.execute("SELECT count(*) FROM rules WHERE number = ?",(rule_number,))
+            find = cursor.fetchone()[0]
+
+            if find>0:
+                await ctx.send("That rule ID (" + rule_number + ") is already assigned, please use a different one or delete rule " + rule_number + ".", delete_after=6.0)
+                return
+
+            #join the message back together
+            text = " ".join(split_command)
+            
+            
+            if len(text) < 4096:
+                #updating the database
+                cursor.execute("INSERT INTO rules VALUES(?,?)",(rule_number,text))
+                db.commit()
+                Send = await ctx.send("the rule \"" + rule_number + "\" has been created, below is it's description:\n" + text)
+            else:
+                Send = await ctx.send("The rule must be less than 4096 characters")
+        except:
+            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!addrule {id} {description}` eg. `!addrule 15 Follow Discord TOS`")
+            traceback.print_exc()
+    else:
+        Send = await ctx.send("You don't have permission to use the command `addrule`")
+
+ 
+
 #change a help command for the bot
 @bot.command()
 async def ghelp(ctx): 
@@ -65,10 +241,14 @@ async def ghelp(ctx):
     embed.set_author(name="Quotebot commands:")
     embed.add_field(name="!removeadmin {@user / userid}", value="remove an admin", inline=False)
     embed.add_field(name="!addadmin {@user / userid}", value="add an admin", inline=False)
-    embed.add_field(name="!setchannel {#channel / channelid}", value="change the notification channel", inline=False)
+    embed.add_field(name="!setrulechannel {#channel / channelid}", value="change the rule channel", inline=False)
+    embed.add_field(name="!update", value="manually check for new updates", inline=False)
     embed.add_field(name="!setmessage {message}", value="change the message sent alongside the articles embed", inline=False)
     embed.add_field(name="!setchecking {True / False}", value="change whether you want the bot to automatically check for new articles or not", inline=False)
     embed.add_field(name="!setinterval {int}", value="change how often the bot checks for new articles (in seconds)", inline=False)
+    embed.add_field(name="!rule {rule}", value="Display a specific rule", inline=False)
+    embed.add_field(name="!addrule {ruleID} {description}", value="Create a new rule", inline=False)
+    embed.add_field(name="!delrule {ruleID}", value="Delete a rule", inline=False)
     embed.add_field(name="!config", value="show the bots configuration file", inline=False)
     embed.add_field(name="!update", value="manually check for new updates", inline=False)
     
@@ -300,6 +480,76 @@ async def setchannel(ctx):
             Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setchannel #channel` or `!setchannel 123456789012345678`")
     else:
         Send = await ctx.send("You don't have permission to use the command `setchannel`")
+
+#change the notification channel for the bot
+@bot.command()
+async def setrulechannel(ctx): 
+    
+    try:
+        #delete the senders message
+        await ctx.message.delete()
+    except Exception:
+        print("not deleting message due to it being in a DM")
+    
+    #get admin IDs from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
+    admin_ids = cursor.fetchone()
+    admin_ids_array = str(admin_ids[0]).split(",")
+    
+    #get lead admins ID from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
+    leadAdmin = cursor.fetchone()
+    
+    #get owners ID from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
+    ownerID = cursor.fetchone()
+    
+    allowed = False
+    owner = False
+    
+    for x in admin_ids_array:
+        if x == str((ctx.message.author).id):
+            allowed = True
+    
+    if str((ctx.message.author).id) == ownerID[0]:
+        allowed = True
+        owner = True
+    elif str((ctx.message.author).id) == leadAdmin[0]:
+        allowed = True
+    
+    if allowed == True:
+        #print(ctx.message.content)
+        
+        split_command = ctx.message.content.split()
+        
+        try:
+            if len(split_command[1]) == 18:
+                if type(int(split_command[1])) is int:
+                    #updating the database
+                    cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(split_command[1],"rules_channel"))
+                    db.commit()
+                    Send = await ctx.send("Rules channel updated to <#" + split_command[1] + ">")
+                else:
+                    Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setrulechannel #channel` or `!setrulechannel 123456789012345678`")
+            elif len(split_command[1]) == 21:
+                if str((split_command[1])[0]) == "<" and str((split_command[1])[1]) == "#":
+                    new_channel_array = (split_command[1]).split("#")
+                    new_channel_array_final = (new_channel_array[1]).split(">")
+                    
+                    #updating the database
+                    cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(new_channel_array_final[0],"rules_channel"))
+                    db.commit()
+                    Send = await ctx.send("Rules channel updated to " + split_command[1])
+                else:
+                    Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setrulechannel #channel` or `!setrulechannel 123456789012345678`")
+                
+            else:
+                Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setrulechannel #channel` or `!setrulechannel 123456789012345678`")
+            
+        except:
+            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setrulechannel #channel` or `!setrulechannel 123456789012345678`")
+    else:
+        Send = await ctx.send("You don't have permission to use the command `setrulechannel`")
 
 #change message sent with the embed when a new article is released for the bot
 @bot.command()
