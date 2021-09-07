@@ -39,7 +39,7 @@ async def on_ready():
     """On ready event!"""
     print("Logged in as " + str(bot.user))
     print("User ID: " + str(bot.user.id))
-    await bot.change_presence(activity=discord.Game(name="Version 2.0.1"))
+    await bot.change_presence(activity=discord.Game(name="!ghelp"))
     
 #ping commmand
 @bot.command(pass_context=True)
@@ -238,22 +238,23 @@ async def ghelp(ctx):
     summonersName = userValue.name
     
     embed = discord.Embed(name="help")
-    embed.set_author(name="Quotebot commands:")
-    embed.add_field(name="!removeadmin {@user / userid}", value="remove an admin", inline=False)
-    embed.add_field(name="!addadmin {@user / userid}", value="add an admin", inline=False)
-    embed.add_field(name="!setrulechannel {#channel / channelid}", value="change the rule channel", inline=False)
-    embed.add_field(name="!update", value="manually check for new updates", inline=False)
-    embed.add_field(name="!setmessage {message}", value="change the message sent alongside the articles embed", inline=False)
-    embed.add_field(name="!setchecking {True / False}", value="change whether you want the bot to automatically check for new articles or not", inline=False)
-    embed.add_field(name="!setinterval {int}", value="change how often the bot checks for new articles (in seconds)", inline=False)
+    embed.set_author(name="Geol History commands:")
+    embed.add_field(name="!removeadmin {@user / userid}", value="Remove an admin", inline=False)
+    embed.add_field(name="!addadmin {@user / userid}", value="Add an admin", inline=False)
+    embed.add_field(name="!setrulechannel {#channel / channelid}", value="Change the rule channel", inline=False)
+    embed.add_field(name="!setchannel", value="Change the notification channel for new articles", inline=False)
+    embed.add_field(name="!setmessage {message}", value="Change the message sent alongside the articles embed", inline=False)
+    embed.add_field(name="!setchecking {True / False}", value="Change whether you want the bot to automatically check for new articles or not", inline=False)
+    embed.add_field(name="!setinterval {int}", value="Change how often the bot checks for new articles (in seconds)", inline=False)
     embed.add_field(name="!rule {rule}", value="Display a specific rule", inline=False)
     embed.add_field(name="!addrule {ruleID} {description}", value="Create a new rule", inline=False)
     embed.add_field(name="!delrule {ruleID}", value="Delete a rule", inline=False)
-    embed.add_field(name="!config", value="show the bots configuration file", inline=False)
-    embed.add_field(name="!update", value="manually check for new updates", inline=False)
+    embed.add_field(name="!config", value="Show the bots configuration file", inline=False)
+    embed.add_field(name="!update", value="Manually check for new updates", inline=False)
+    embed.add_field(name="!ghelp", value="Show this help message", inline=False)
     
     embed.set_footer(text = "summoned by: " + summonersName)
-    embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/797768317170614272/f5dead14dbdc6f78416fd19eb948ad60.png?size=1024")
+    embed.set_thumbnail(url="https://service.lmwn.co.uk/brandkit/geolhistory/background-logo-square.png")
     await ctx.send(embed=embed)
 
 #change remove an admin ID for the bot
