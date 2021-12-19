@@ -1,9 +1,8 @@
+import os
 import requests
-import json
-import time
 import datetime
 import traceback
-import hashlib
+import configparser
 import sqlite3
 import numpy as np
 import xml.etree.ElementTree as ET
@@ -13,9 +12,22 @@ from discord.ext.commands import Bot
 from discord import Member
 from discord.ext.commands import has_permissions, MissingPermissions
 
+config = configparser.ConfigParser()
+
+# since i have a tendency to leak bot tokens through github, probably best to store them externally
+if os.path.exists('config.ini') == False:
+    config['DEFAULT'] = {'bot_token': '123xyz'}
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
+    
+    print("Please go to config.ini and enter your bots details and preferences")
+    exit()
+
+config.read('config.ini')
+
 ##### Variables #####
 
-bot_token = ''
+bot_token = config['DEFAULT']['bot_token']
 bots_prefix = "!"
 
 #####################
@@ -151,9 +163,6 @@ async def delrule(ctx):
     else:
         Send = await ctx.send("You don't have permission to use the command `delrule`")
 
-    
-    
-    
 #add a rule
 @bot.command()
 async def addrule(ctx): 
@@ -221,8 +230,6 @@ async def addrule(ctx):
             traceback.print_exc()
     else:
         Send = await ctx.send("You don't have permission to use the command `addrule`")
-
- 
 
 #change a help command for the bot
 @bot.command()
@@ -409,7 +416,6 @@ async def addadmin(ctx):
             Send = await ctx.send("Please ensure you have formatted the command correctly\n`!addadmin @user` or `!addadmin 123456789012345678`")
     else:
         Send = await ctx.send("You don't have permission to use the command `addadmin`")
-
 
 
 #change the notification channel for the bot
@@ -608,7 +614,6 @@ async def setmessage(ctx):
     else:
         Send = await ctx.send("You don't have permission to use the command `setmessage`")
 
-
 #change the status of auto_checking for the bot
 @bot.command()
 async def setchecking(ctx): 
@@ -665,8 +670,6 @@ async def setchecking(ctx):
             Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setchecking True` or `!setchecking False`")
     else:
         Send = await ctx.send("You don't have permission to use the command `setchecking`")
-
-
 
 #change the auto refresh interval for the bot
 @bot.command()
@@ -792,7 +795,6 @@ async def config(ctx):
     else:
         Send = await ctx.send("You don't have permission to use the command `config`")
     
-
 #manually check for new article
 @bot.command()
 async def update(ctx):
@@ -940,7 +942,6 @@ async def update(ctx):
     
     else:
         Send = await ctx.send("You don't have permission to use the command `update`")
-
 
 
 bot.run(bot_token) 
