@@ -38,12 +38,14 @@ bot = interactions.Client(token=bot_token)
 
 @bot.event
 async def on_ready():
-    """On ready event!"""
-    print("Logged in as " + str(bot.user))
-    print("User ID: " + str(bot.user.id))
+    print("Bot Connected!")
     
 #ping commmand
-@bot.command(name="Ping",description="This command will return the bots ping",scope=guilds)
+@bot.command(
+    name="ping",
+    description="This command will return the bots ping",
+    scope=guilds
+)
 async def ping(ctx):
     latency = ctx.bot.latency
     latency = latency * 1000
@@ -51,7 +53,11 @@ async def ping(ctx):
     await ctx.send("My ping is **{}ms**!".format(latency))
 
 #summon a rulefor the bot
-@bot.command()
+@bot.command(
+    name="ping",
+    description="This command will return the bots ping",
+    scope=guilds
+)
 async def rule(ctx): 
     try:
         #delete the senders message
@@ -91,6 +97,7 @@ async def rule(ctx):
     except:
         Send = await ctx.send("Please ensure you have formatted the command correctly\n`!rule {rule}` eg. `!rule 5` ")
 
+'''
 #delete a rule
 @bot.command()
 async def delrule(ctx): 
@@ -782,5 +789,7 @@ async def config(ctx):
     
     else:
         Send = await ctx.send("You don't have permission to use the command `config`")
+
+'''
     
 bot.start()
