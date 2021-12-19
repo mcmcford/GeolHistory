@@ -137,26 +137,18 @@ async def on_ready():
                 
                 if (is_title_already_in_db == False and is_link_already_in_db == False and is_desc_already_in_db == False):
                     print('New article found')
-                    
-                    #sending notification
-                    
-                    # modifying the XML description to remove copyright and URL at end
-                    cut_description_array = desc.split("Read more at GeolHistory.org")
-                    cut_description = cut_description_array[0]
+
+                    #get the string that will be added onto the end of the cutdown description
+                    cursor.execute("SELECT value_key FROM config WHERE value = ?",("desc_extention",))
+                    desc_ext = cursor.fetchone()[0]
+
+                    # shorten the description from in the XML to 400 chars
+                    cut_description = desc[:400] + desc_ext
                     
                     # removing email from author
                     cut_author_array = author.split("(")
                     cut_author = cut_author_array[1].rstrip((cut_author_array[1])[-1]) # remove the ending bracket from the sting
                     
-                    # prints for debugging
-                    print("title = " + title)
-                    print("cut_description = " + cut_description)
-                    print("image = " + image)
-                    print("cut_author = " + cut_author)
-                    print("link = " + str(link))
-                    print("channel = " + str(channel[0]))
-
-
                     #getting the message ID
                     message_id = await send_notification(title,cut_description,image,cut_author,str(link),int(channel[0]))
                     
