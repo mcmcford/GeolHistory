@@ -99,6 +99,52 @@ async def rule(ctx,rule_number):
         await ctx.send("Please ensure you have formatted the command correctly\n`/rule {rule number}` eg. `/rule 5` ")
         traceback.print_exc()
 
+#change a help command for the bot
+@bot.command(
+    name="help",
+    description="This command will provide information on all the bots commands",
+    scope=guilds)
+async def help(ctx): 
+    print("Running help command") # for debugging
+        
+    help_embed = interactions.Embed(
+        title="Geol History commands:",
+        thumbnail="https://service.lmwn.co.uk/brandkit/geolhistory/background-logo-square.png",
+        author="Geol History",
+        description="This bot is designed to help you keep track of the history of the Geol History Discord server.\n\nTo see a list of commands, please see <#715984100907959808>",
+        fields=[
+            interactions.EmbedField(name="/rule {rule number}", value="Summon a rule for the bot", inline=False)._json,
+            interactions.EmbedField(name="!removeadmin {@user / userid}", value="Remove an admin", inline=False)._json,
+            interactions.EmbedField(name="!addadmin {@user / userid}", value="Add an admin", inline=False)._json,
+            interactions.EmbedField(name="!setrulechannel {#channel / channelid}", value="Change the rule channel", inline=False)._json
+        ]
+    )
+
+    print("Embed is built") # for debugging
+    await ctx.send(embeds=help_embed)
+    await ctx.send("test text")
+    await ctx.send("test text",embeds=help_embed)
+    print("Embed sent") # for debugging
+
+
+    #embed.EmbedField(name="!removeadmin {@user / userid}", value="Remove an admin", inline=False)
+    #embed.EmbedField(name="!addadmin {@user / userid}", value="Add an admin", inline=False)
+    #embed.EmbedField(name="!setrulechannel {#channel / channelid}", value="Change the rule channel", inline=False)
+    #embed.EmbedField(name="!setchannel", value="Change the notification channel for new articles", inline=False)
+    #embed.EmbedField(name="!setmessage {message}", value="Change the message sent alongside the articles embed", inline=False)
+    #embed.EmbedField(name="!setchecking {True / False}", value="Change whether you want the bot to automatically check for new articles or not", inline=False)
+    #embed.EmbedField(name="!setinterval {int}", value="Change how often the bot checks for new articles (in seconds)", inline=False)
+    #embed.EmbedField(name="!rule {rule}", value="Display a specific rule", inline=False)
+    #embed.EmbedField(name="!addrule {ruleID} {description}", value="Create a new rule", inline=False)
+    #embed.EmbedField(name="!delrule {ruleID}", value="Delete a rule", inline=False)
+    #embed.EmbedField(name="!config", value="Show the bots configuration file", inline=False)
+    #embed.EmbedField(name="!update", value="Manually check for new updates", inline=False)
+    #embed.EmbedField(name="!ghelp", value="Show this help message", inline=False)
+    
+    #embed.set_thumbnail(url="https://service.lmwn.co.uk/brandkit/geolhistory/background-logo-square.png")
+    
+
+
 '''
 #delete a rule
 @bot.command()
@@ -228,39 +274,6 @@ async def addrule(ctx):
             traceback.print_exc()
     else:
         Send = await ctx.send("You don't have permission to use the command `addrule`")
-
-#change a help command for the bot
-@bot.command()
-async def ghelp(ctx): 
-    try:
-        #delete the senders message
-        await ctx.message.delete()
-    except Exception:
-        print("not deleting message due to it being in a DM")
-    
-    #getting the nickname of the person who ran the command / made the quote
-    userValue = await bot.fetch_user((ctx.message.author).id)
-    summonersName = userValue.name
-    
-    embed = discord.Embed(name="help")
-    embed.set_author(name="Geol History commands:")
-    embed.add_field(name="!removeadmin {@user / userid}", value="Remove an admin", inline=False)
-    embed.add_field(name="!addadmin {@user / userid}", value="Add an admin", inline=False)
-    embed.add_field(name="!setrulechannel {#channel / channelid}", value="Change the rule channel", inline=False)
-    embed.add_field(name="!setchannel", value="Change the notification channel for new articles", inline=False)
-    embed.add_field(name="!setmessage {message}", value="Change the message sent alongside the articles embed", inline=False)
-    embed.add_field(name="!setchecking {True / False}", value="Change whether you want the bot to automatically check for new articles or not", inline=False)
-    embed.add_field(name="!setinterval {int}", value="Change how often the bot checks for new articles (in seconds)", inline=False)
-    embed.add_field(name="!rule {rule}", value="Display a specific rule", inline=False)
-    embed.add_field(name="!addrule {ruleID} {description}", value="Create a new rule", inline=False)
-    embed.add_field(name="!delrule {ruleID}", value="Delete a rule", inline=False)
-    embed.add_field(name="!config", value="Show the bots configuration file", inline=False)
-    embed.add_field(name="!update", value="Manually check for new updates", inline=False)
-    embed.add_field(name="!ghelp", value="Show this help message", inline=False)
-    
-    embed.set_footer(text = "summoned by: " + summonersName)
-    embed.set_thumbnail(url="https://service.lmwn.co.uk/brandkit/geolhistory/background-logo-square.png")
-    await ctx.send(embed=embed)
 
 #change remove an admin ID for the bot
 @bot.command()
