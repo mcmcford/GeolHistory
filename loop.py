@@ -1,20 +1,34 @@
-import requests
-import json
+import os
 import time
-import datetime
-import traceback
-import hashlib
 import sqlite3
-import xml.etree.ElementTree as ET
 import discord
-from discord.ext import commands
-from discord.ext.commands import Bot
+import datetime
+import requests
+import traceback
+import configparser
 from discord import Member
+from discord.ext import commands
+import xml.etree.ElementTree as ET
+from discord.ext.commands import Bot
 from discord.ext.commands import has_permissions, MissingPermissions
+
+
+config = configparser.ConfigParser()
+
+# since i have a tendency to leak bot tokens through github, probably best to store them externally
+if os.path.exists('config.ini') == False:
+    config['DEFAULT'] = {'bot_token': '123xyz'}
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
+    
+    print("Please go to config.ini and enter your bots details and preferences")
+    exit()
+
+config.read('config.ini')
 
 ##### Variables #####
 
-bot_token = ''
+bot_token = config['DEFAULT']['bot_token']
 bots_prefix = "!"
 
 #####################
@@ -31,18 +45,23 @@ db.commit()
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(bots_prefix))
 @bot.event
 async def on_ready():
+
+    # this just helps to know if the bot is connected when running tests
+    """On ready event!"""
+    print("Logged in as " + str(bot.user))
+    print("User ID: " + str(bot.user.id))
+
+    # Infinite loop since this script should never really stop
     while True:
         #get auto refresh status from db
         cursor.execute("SELECT value_key FROM config WHERE value = ?",("auto_checking",))
         active = cursor.fetchone()
-        
-        
+                
         #get refresh time from db
         cursor.execute("SELECT value_key FROM config WHERE value = ?",("timeperiod",))
         find = cursor.fetchone()
         
         time.sleep(int(find[0]))
-        
         
         if str(active[0]) == "True":
             
@@ -50,10 +69,11 @@ async def on_ready():
             
             #get channel ID from db
             cursor.execute("SELECT value_key FROM config WHERE value = ?",("notification_channel",))
-            find = cursor.fetchone()
+            # it was stupid to name all these 'find'
+            channel = cursor.fetchone()
                         
-            # declare url
-            url = 'https://geolhistory.org/rss/articles.php'
+            # declare url 
+            url = 'https://geolhistory.org/rss/articles'
             
             # http response
             resp = requests.get(url)
@@ -128,8 +148,17 @@ async def on_ready():
                     cut_author_array = author.split("(")
                     cut_author = cut_author_array[1].rstrip((cut_author_array[1])[-1]) # remove the ending bracket from the sting
                     
+                    # prints for debugging
+                    print("title = " + title)
+                    print("cut_description = " + cut_description)
+                    print("image = " + image)
+                    print("cut_author = " + cut_author)
+                    print("link = " + str(link))
+                    print("channel = " + str(channel[0]))
+
+
                     #getting the message ID
-                    message_id = send_notification(title,cut_description,image,cut_author,link,int(find[0]))
+                    message_id = await send_notification(title,cut_description,image,cut_author,str(link),int(channel[0]))
                     
                     print('adding to database')
                     #insert into database
