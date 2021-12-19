@@ -24,6 +24,7 @@ db = sqlite3.connect('GeolHistory.db')
 cursor = db.cursor()
 cursor.execute('CREATE TABLE IF NOT EXISTS articles(message_id TEXT primary key, title TEXT, link TEXT, description TEXT, author TEXT, image TEXT)')
 cursor.execute('CREATE TABLE IF NOT EXISTS config(value TEXT primary key, value_key TEXT, description TEXT)')
+db.commit()
 
 
 # setting bot prefix
@@ -50,9 +51,7 @@ async def on_ready():
             #get channel ID from db
             cursor.execute("SELECT value_key FROM config WHERE value = ?",("notification_channel",))
             find = cursor.fetchone()
-            
-            channel = bot.get_channel(int(find[0])) # the message's channel
-            
+                        
             # declare url
             url = 'https://geolhistory.org/rss/articles.php'
             
@@ -129,37 +128,41 @@ async def on_ready():
                     cut_author_array = author.split("(")
                     cut_author = cut_author_array[1].rstrip((cut_author_array[1])[-1]) # remove the ending bracket from the sting
                     
-                    
-                    #building the embed
-                    style = discord.Embed(name="Article Notification", title=title, description=cut_description, timestamp=datetime.datetime.utcnow(), color=0x28a4fd)
-                    style.set_image(url=image)
-                    style.add_field(name="Author", value=cut_author, inline=True)
-                    style.add_field(name="To Read More", value="[Click Here](" + link + ")", inline=True)
-                    style.set_footer(text = "Version 2.0.1")
-                    
-                    print('sending message')
-                    #get new article message from db
-                    cursor.execute("SELECT value_key FROM config WHERE value = ?",("new_article_message",))
-                    find = cursor.fetchone()
-                    
-                    #sending the embed
-                    Send = await channel.send(find[0], embed=style)
-                    
                     #getting the message ID
-                    message_id = Send.id
+                    message_id = send_notification(title,cut_description,image,cut_author,link,int(find[0]))
                     
                     print('adding to database')
                     #insert into database
                     cursor.execute("INSERT INTO articles VALUES(?,?,?,?,?,?)",(message_id,title,URL,desc,author,"N/A"))
                     db.commit()
-                
                 elif (is_title_already_in_db == True and is_link_already_in_db == True and is_desc_already_in_db == False):
                     # update description
-                    print("placeholder")
-            
+                    pass 
         else:
             print("not active")
 
+async def send_notification(title,cut_description,image_url,cut_author,link_url,channel_id):
+    
+    #building the embed
+    style = discord.Embed(name="Article Notification", title=title, description=cut_description, timestamp=datetime.datetime.utcnow(), color=0x28a4fd)
+    style.set_image(url=image_url)
+    style.add_field(name="Author", value=cut_author, inline=True)
+    style.add_field(name="To Read More", value="[Click Here](" + link_url + ")", inline=True)
+    style.set_footer(text = "Version 2.0.1")
+    
+    print('sending message')
+
+    #get new article message from db, this will be added above the embed
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("new_article_message",))
+    find = cursor.fetchone()
+
+    # the message's channel
+    channel = bot.get_channel(channel_id) 
+    
+    #sending the embed
+    Send = await channel.send(find[0], embed=style)
+    message_id = Send.id
+    return message_id
 
 
 bot.run(bot_token) 
