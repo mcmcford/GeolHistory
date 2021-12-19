@@ -58,17 +58,15 @@ async def ping(ctx):
     description="Summon a specific rule",
     scope=guilds,
     options=[
-        interactions.TextInput(
-            label = "rule_number",
-            custom_id="text_input_response",
-            style=interactions.TextStyleType.SHORT,
-            required = True
+        interactions.Option(    
+            type=interactions.OptionType.INTEGER,
+            name="rule_number",
+            description="The numbe of the rule you would like to summon",
+            required=True,
         )
     ]
 )
-async def rule(ctx,text_input_response): 
-
-    print(text_input_response)
+async def rule(ctx,rule_number): 
 
     try:
         #delete the senders message
@@ -77,36 +75,25 @@ async def rule(ctx,text_input_response):
         print("not deleting message due to it being in a DM")
     
     try:
-        split_command = ctx.message.content.split()
-        del split_command[0]
+        cursor.execute("SELECT number,description FROM rules WHERE number=(?)",(str(rule_number),))
+        query = cursor.fetchall()
+        number_of_rules_named_that = len(query)
         
-        #join the message back together
-        ruleNumber = " ".join(split_command)
+        cursor.execute("SELECT value_key FROM config WHERE value = ?",("rules_channel",))
+        rule_channel_ID_array = cursor.fetchone()
         
-        if len(ruleNumber) < 1:
-            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!rule {rule}` eg. `!rule 5` ")
-        
+        if number_of_rules_named_that < 1:
+            await ctx.send("The rule " + str(rule_number) + " does not exist. To see what rules you can summon with this command, please see <#" + rule_channel_ID_array[0] + ">", delete_after=10.0)
         else:
-            #query see how many rules exist
-            cursor.execute("SELECT number,description FROM rules WHERE number=(?)",(ruleNumber,))
-            query = cursor.fetchall()
-            number_of_rules_named_that = len(query)
-            
-            cursor.execute("SELECT value_key FROM config WHERE value = ?",("rules_channel",))
-            rule_channel_ID_array = cursor.fetchone()
-            
-            #getting the nickname of the person who ran the command / made the quote
-            userValue = await bot.fetch_user((ctx.message.author).id)
-            summonersName = userValue.name
-            
-            if number_of_rules_named_that < 1:
-                await ctx.send("The rule " + ruleNumber + " does not exist. To see what rules you can summon with this command, please see <#" + rule_channel_ID_array[0] + ">", delete_after=10.0)
-            else:
-                embed = interactions.Embed(name="help",title="Rule " + str(query[0][0]),description=str(query[0][1]), timestamp=datetime.datetime.utcnow(), color=0x28a4fd)
-                embed.set_footer(text = "summoned by: " + summonersName)
-                await ctx.send(embed=embed)
+            embed = interactions.Embed(
+                title="Rule " + str(query[0][0]),
+                description=str(query[0][1]), 
+                timestamp=str(datetime.datetime.utcnow()), 
+                color=0x28a4fd)
+            await ctx.send(embeds=embed)
     except:
-        Send = await ctx.send("Please ensure you have formatted the command correctly\n`!rule {rule}` eg. `!rule 5` ")
+        Send = await ctx.send("Please ensure you have formatted the command correctly\n`/rule {rule number}` eg. `/rule 5` ")
+        traceback.print_exc()
 
 '''
 #delete a rule
