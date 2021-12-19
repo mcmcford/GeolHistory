@@ -1,4 +1,7 @@
 # GeolHistory RSS Bot
+
+[Currently in the process of switching over to the Discord-Interactions API wrapper which is still in development so it may be a while before the next release]
+
 This is a basic bot made for the GeolHistory Discord server https://discord.gg/Zj82RUWnjA
 
 It automatically checks for new articles via their websites rss feed https://geolhistory.org/ and provides a notification in the discord when a new one is released.
