@@ -75,16 +75,20 @@ async def rule(ctx,rule_number):
         print("not deleting message due to it being in a DM")
     
     try:
+        # get the rule from the db based on the users input
         cursor.execute("SELECT number,description FROM rules WHERE number=(?)",(str(rule_number),))
         query = cursor.fetchall()
         number_of_rules_named_that = len(query)
-        
-        cursor.execute("SELECT value_key FROM config WHERE value = ?",("rules_channel",))
-        rule_channel_ID_array = cursor.fetchone()
-        
+                
         if number_of_rules_named_that < 1:
+
+            # if the number the user has requested doesn't exist, direct them to the rules channel
+            cursor.execute("SELECT value_key FROM config WHERE value = ?",("rules_channel",))
+            rule_channel_ID_array = cursor.fetchone()
+
             await ctx.send("The rule " + str(rule_number) + " does not exist. To see what rules you can summon with this command, please see <#" + rule_channel_ID_array[0] + ">", delete_after=10.0)
         else:
+            # build the embed for the rule
             embed = interactions.Embed(
                 title="Rule " + str(query[0][0]),
                 description=str(query[0][1]), 
@@ -92,7 +96,7 @@ async def rule(ctx,rule_number):
                 color=0x28a4fd)
             await ctx.send(embeds=embed)
     except:
-        Send = await ctx.send("Please ensure you have formatted the command correctly\n`/rule {rule number}` eg. `/rule 5` ")
+        await ctx.send("Please ensure you have formatted the command correctly\n`/rule {rule number}` eg. `/rule 5` ")
         traceback.print_exc()
 
 '''
