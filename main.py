@@ -109,39 +109,27 @@ async def help(ctx):
         
     help_embed = interactions.Embed(
         title="Geol History commands:",
-        thumbnail="https://service.lmwn.co.uk/brandkit/geolhistory/background-logo-square.png",
-        author="Geol History",
-        description="This bot is designed to help you keep track of the history of the Geol History Discord server.\n\nTo see a list of commands, please see <#715984100907959808>",
+        thumbnail=interactions.EmbedImageStruct(url="https://service.lmwn.co.uk/brandkit/geolhistory/background-logo-square.png")._json,
+        author=interactions.EmbedAuthor(name="Geol History")._json,
         fields=[
             interactions.EmbedField(name="/rule {rule number}", value="Summon a rule for the bot", inline=False)._json,
-            interactions.EmbedField(name="!removeadmin {@user / userid}", value="Remove an admin", inline=False)._json,
-            interactions.EmbedField(name="!addadmin {@user / userid}", value="Add an admin", inline=False)._json,
-            interactions.EmbedField(name="!setrulechannel {#channel / channelid}", value="Change the rule channel", inline=False)._json
+            interactions.EmbedField(name="/removeadmin {@user / userid}", value="Remove an admin", inline=False)._json,
+            interactions.EmbedField(name="/addadmin {@user / userid}", value="Add an admin", inline=False)._json,
+            interactions.EmbedField(name="/setrulechannel {#channel / channelid}", value="Change the rule channel", inline=False)._json,
+            interactions.EmbedField(name="/setchannel", value="Change the notification channel for new articles", inline=False)._json,
+            interactions.EmbedField(name="/setmessage {message}", value="Change the message sent alongside the articles embed", inline=False)._json,
+            interactions.EmbedField(name="/setchecking {True / False}", value="Change whether you want the bot to automatically check for new articles or not", inline=False)._json,
+            interactions.EmbedField(name="/rule {rule}", value="Display a specific rule", inline=False)._json,
+            interactions.EmbedField(name="/addrule {ruleID} {description}", value="Create a new rule", inline=False)._json,
+            interactions.EmbedField(name="/delrule {ruleID}", value="Delete a rule", inline=False)._json,
+            interactions.EmbedField(name="/config", value="Show the bots configuration file", inline=False)._json,
+            interactions.EmbedField(name="/update", value="Manually check for new updates", inline=False)._json,
+            interactions.EmbedField(name="/help", value="Show this help message", inline=False)._json,
         ]
     )
 
-    print("Embed is built") # for debugging
-    await ctx.send(embeds=help_embed)
-    await ctx.send("test text")
-    await ctx.send("test text",embeds=help_embed)
-    print("Embed sent") # for debugging
+    await ctx.send("These commands may not all work, the bot is currently still being transitioned over to a new APIWrapper",embeds=help_embed)
 
-
-    #embed.EmbedField(name="!removeadmin {@user / userid}", value="Remove an admin", inline=False)
-    #embed.EmbedField(name="!addadmin {@user / userid}", value="Add an admin", inline=False)
-    #embed.EmbedField(name="!setrulechannel {#channel / channelid}", value="Change the rule channel", inline=False)
-    #embed.EmbedField(name="!setchannel", value="Change the notification channel for new articles", inline=False)
-    #embed.EmbedField(name="!setmessage {message}", value="Change the message sent alongside the articles embed", inline=False)
-    #embed.EmbedField(name="!setchecking {True / False}", value="Change whether you want the bot to automatically check for new articles or not", inline=False)
-    #embed.EmbedField(name="!setinterval {int}", value="Change how often the bot checks for new articles (in seconds)", inline=False)
-    #embed.EmbedField(name="!rule {rule}", value="Display a specific rule", inline=False)
-    #embed.EmbedField(name="!addrule {ruleID} {description}", value="Create a new rule", inline=False)
-    #embed.EmbedField(name="!delrule {ruleID}", value="Delete a rule", inline=False)
-    #embed.EmbedField(name="!config", value="Show the bots configuration file", inline=False)
-    #embed.EmbedField(name="!update", value="Manually check for new updates", inline=False)
-    #embed.EmbedField(name="!ghelp", value="Show this help message", inline=False)
-    
-    #embed.set_thumbnail(url="https://service.lmwn.co.uk/brandkit/geolhistory/background-logo-square.png")
     
 
 
