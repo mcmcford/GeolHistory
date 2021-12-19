@@ -54,11 +54,22 @@ async def ping(ctx):
 
 #summon a rulefor the bot
 @bot.command(
-    name="ping",
-    description="This command will return the bots ping",
-    scope=guilds
+    name="rule",
+    description="Summon a specific rule",
+    scope=guilds,
+    options=[
+        interactions.TextInput(
+            label = "rule_number",
+            custom_id="text_input_response",
+            style=interactions.TextStyleType.SHORT,
+            required = True
+        )
+    ]
 )
-async def rule(ctx): 
+async def rule(ctx,text_input_response): 
+
+    print(text_input_response)
+
     try:
         #delete the senders message
         await ctx.message.delete()
@@ -91,7 +102,7 @@ async def rule(ctx):
             if number_of_rules_named_that < 1:
                 await ctx.send("The rule " + ruleNumber + " does not exist. To see what rules you can summon with this command, please see <#" + rule_channel_ID_array[0] + ">", delete_after=10.0)
             else:
-                embed = discord.Embed(name="help",title="Rule " + str(query[0][0]),description=str(query[0][1]), timestamp=datetime.datetime.utcnow(), color=0x28a4fd)
+                embed = interactions.Embed(name="help",title="Rule " + str(query[0][0]),description=str(query[0][1]), timestamp=datetime.datetime.utcnow(), color=0x28a4fd)
                 embed.set_footer(text = "summoned by: " + summonersName)
                 await ctx.send(embed=embed)
     except:
