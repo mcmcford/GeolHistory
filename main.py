@@ -44,8 +44,7 @@ async def on_ready():
 @bot.command(
     name="ping",
     description="This command will return the bots ping",
-    scope=guilds
-)
+    scope=guilds)
 async def ping(ctx):
     latency = ctx.bot.latency
     latency = latency * 1000
@@ -64,15 +63,8 @@ async def ping(ctx):
             description="The numbe of the rule you would like to summon",
             required=True,
         )
-    ]
-)
+    ])
 async def rule(ctx,rule_number): 
-
-    try:
-        #delete the senders message
-        await ctx.message.delete()
-    except Exception:
-        print("not deleting message due to it being in a DM")
     
     try:
         # get the rule from the db based on the users input
@@ -131,8 +123,6 @@ async def help(ctx):
     await ctx.send("These commands may not all work, the bot is currently still being transitioned over to a new APIWrapper",embeds=help_embed)
 
     
-
-
 '''
 #delete a rule
 @bot.command()
