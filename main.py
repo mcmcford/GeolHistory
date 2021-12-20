@@ -243,6 +243,40 @@ async def config(ctx):
     else:
         await ctx.send("You don't have permission to use the command `config`")
 
+#change message sent with the embed when a new article is released for the bot
+@bot.command(    
+    name="setmessage",
+    description="change message sent with the embed when a new article is released",
+    scope=guilds,
+    options=[
+        interactions.Option(    
+            type=interactions.OptionType.STRING,
+            name="message",
+            description="The message you would like to be sent",
+            required=True,
+        )
+    ])
+async def setmessage(ctx,message): 
+    
+    allowed = check_permissions(ctx.author.user.id,"admin")
+    
+    if allowed == True:
+        try:
+            
+            if len(message) < 2000:
+                #updating the database
+                cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(message,"new_article_message"))
+                db.commit()
+                await ctx.send("new artice message updated to \"" + message + "\"")
+            else:
+                await ctx.send("The message must be less than 2000 characters")
+        except:
+            await ctx.send("Please ensure you have formatted the command correctly\n`!setmessage {message}` eg. `!setmessage Hey, a new article has been released!`")
+    else:
+        await ctx.send("You don't have permission to use the command `setmessage`")
+
+
+
 def check_permissions(user,required_perms):
     # this checks three permission levels, admin, lead_admin and owner
 
@@ -634,62 +668,6 @@ async def setrulechannel(ctx):
             Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setrulechannel #channel` or `!setrulechannel 123456789012345678`")
     else:
         Send = await ctx.send("You don't have permission to use the command `setrulechannel`")
-
-#change message sent with the embed when a new article is released for the bot
-@bot.command()
-async def setmessage(ctx): 
-    
-    try:
-        #delete the senders message
-        await ctx.message.delete()
-    except Exception:
-        print("not deleting message due to it being in a DM")
-    
-    #get admin IDs from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
-    admin_ids = cursor.fetchone()
-    admin_ids_array = str(admin_ids[0]).split(",")
-    
-    #get lead admins ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
-    leadAdmin = cursor.fetchone()
-    
-    #get owners ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
-    ownerID = cursor.fetchone()
-    
-    allowed = False
-    owner = False
-    
-    for x in admin_ids_array:
-        if x == str((ctx.message.author).id):
-            allowed = True
-    
-    if str((ctx.message.author).id) == ownerID[0]:
-        allowed = True
-        owner = True
-    elif str((ctx.message.author).id) == leadAdmin[0]:
-        allowed = True
-    
-    if allowed == True:
-        try:
-            split_command = ctx.message.content.split()
-            del split_command[0]
-
-            #join the message back together
-            text = " ".join(split_command)
-            
-            if len(text) < 2000:
-                #updating the database
-                cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(text,"new_article_message"))
-                db.commit()
-                Send = await ctx.send("new artice message updated to \"" + text + "\"")
-            else:
-                Send = await ctx.send("The message must be less than 2000 characters")
-        except:
-            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setmessage {message}` eg. `!setmessage Hey, a new article has been released!`")
-    else:
-        Send = await ctx.send("You don't have permission to use the command `setmessage`")
 
 #change the status of auto_checking for the bot
 @bot.command()
