@@ -368,6 +368,33 @@ async def setchecking(ctx,enabled_bool):
     else:
         await ctx.send("You don't have permission to use the command `setchecking`")
 
+#change the notification channel for the bot
+@bot.command(
+    name="setchannel",
+    description="Change the channel that new articles are sent to",
+    scope=guilds,
+    options=[
+        interactions.Option(    
+            type=interactions.OptionType.CHANNEL,
+            name="channel",
+            description="The channel you would like to send new articles to",
+            required=True,
+        )
+    ])
+async def setchannel(ctx,channel): 
+    
+    # check if the user has admin permissions or higher
+    allowed = check_permissions(ctx.author.user.id,"admin")
+    
+    if allowed == True:
+
+        #updating the database
+        cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(channel,"notification_channel"))
+        db.commit()
+        Send = await ctx.send("Notification channel updated to <#" + str(channel) + ">")                
+    else:
+        Send = await ctx.send("You don't have permission to use the command `setchannel`")
+
 
 def check_permissions(user,required_perms):
     # this checks three permission levels, admin, lead_admin and owner
@@ -463,6 +490,7 @@ def check_if_admin(user):
     else:
         # otherwise return false
         return False
+
 
 
 
@@ -620,75 +648,6 @@ async def addadmin(ctx):
     else:
         Send = await ctx.send("You don't have permission to use the command `addadmin`")
 
-#change the notification channel for the bot
-@bot.command()
-async def setchannel(ctx): 
-    
-    try:
-        #delete the senders message
-        await ctx.message.delete()
-    except Exception:
-        print("not deleting message due to it being in a DM")
-    
-    #get admin IDs from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
-    admin_ids = cursor.fetchone()
-    admin_ids_array = str(admin_ids[0]).split(",")
-    
-    #get lead admins ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
-    leadAdmin = cursor.fetchone()
-    
-    #get owners ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
-    ownerID = cursor.fetchone()
-    
-    allowed = False
-    owner = False
-    
-    for x in admin_ids_array:
-        if x == str((ctx.message.author).id):
-            allowed = True
-    
-    if str((ctx.message.author).id) == ownerID[0]:
-        allowed = True
-        owner = True
-    elif str((ctx.message.author).id) == leadAdmin[0]:
-        allowed = True
-    
-    if allowed == True:
-        #print(ctx.message.content)
-        
-        split_command = ctx.message.content.split()
-        
-        try:
-            if len(split_command[1]) == 18:
-                if type(int(split_command[1])) is int:
-                    #updating the database
-                    cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(split_command[1],"notification_channel"))
-                    db.commit()
-                    Send = await ctx.send("Notification channel updated to <#" + split_command[1] + ">")
-                else:
-                    Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setchannel #channel` or `!setchannel 123456789012345678`")
-            elif len(split_command[1]) == 21:
-                if str((split_command[1])[0]) == "<" and str((split_command[1])[1]) == "#":
-                    new_channel_array = (split_command[1]).split("#")
-                    new_channel_array_final = (new_channel_array[1]).split(">")
-                    
-                    #updating the database
-                    cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(new_channel_array_final[0],"notification_channel"))
-                    db.commit()
-                    Send = await ctx.send("Notification channel updated to " + split_command[1])
-                else:
-                    Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setchannel #channel` or `!setchannel 123456789012345678`")
-                
-            else:
-                Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setchannel #channel` or `!setchannel 123456789012345678`")
-            
-        except:
-            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setchannel #channel` or `!setchannel 123456789012345678`")
-    else:
-        Send = await ctx.send("You don't have permission to use the command `setchannel`")
 
 #change the notification channel for the bot
 @bot.command()
