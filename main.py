@@ -60,7 +60,7 @@ async def ping(ctx):
         interactions.Option(    
             type=interactions.OptionType.INTEGER,
             name="rule_number",
-            description="The numbe of the rule you would like to summon",
+            description="The number of the rule you would like to summon",
             required=True,
         )
     ])
@@ -121,6 +121,48 @@ async def help(ctx):
     )
 
     await ctx.send("These commands may not all work, the bot is currently still being transitioned over to a new APIWrapper",embeds=help_embed)
+
+#delete a rule
+@bot.command(    
+    name="delrule",
+    description="Delete a rule from the database",
+    scope=guilds,
+    options=[
+        interactions.Option(    
+            type=interactions.OptionType.INTEGER,
+            name="rule_number",
+            description="The number of the rule you would like to remove from the database",
+            required=True,
+        )
+    ])
+async def delrule(ctx,rule_number): 
+        
+    allowed = check_permissions(ctx.author.user.id,"admin")
+    
+    if allowed == True:
+        try:
+            
+            #find if rule is in the db already
+            cursor.execute("SELECT count(*) FROM rules WHERE number = ?",(str(rule_number),))
+            find = cursor.fetchone()[0]
+
+            if find>0:
+                cursor.execute("DELETE FROM rules WHERE number = " + str(rule_number))
+                db.commit()
+                await ctx.send("The rule " + str(rule_number) + " has been deleted")
+                #await ctx.send("The rule " + str(rule_number) + " has been deleted", delete_after=6.0) # need to find the new way to delete messages
+            
+            else:
+                
+                await ctx.send("That rule ID (" + str(rule_number) + ") doesn't exist, please use an existing one or create rule " + str(rule_number) + ".")
+                #await ctx.send("That rule ID (" + str(rule_number) + ") doesn't exist, please use an existing one or create rule " + str(rule_number) + ".", delete_after=6.0)
+                return
+        except:
+            await ctx.send("Please ensure you have formatted the command correctly\n`!delrule {id} {description}` eg. `!delrule 15`")
+            traceback.print_exc()
+    else:
+        await ctx.send("You don't have permission to use the command `delrule`")
+
 
 def check_permissions(user,required_perms):
     # this checks three permission levels, admin, lead_admin and owner
@@ -216,71 +258,10 @@ def check_if_admin(user):
     else:
         # otherwise return false
         return False
-    
 
-    
+
+
 '''
-#delete a rule
-@bot.command()
-async def delrule(ctx): 
-    
-    try:
-        #delete the senders message
-        await ctx.message.delete()
-    except Exception:
-        print("not deleting message due to it being in a DM")
-    
-    #get admin IDs from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
-    admin_ids = cursor.fetchone()
-    admin_ids_array = str(admin_ids[0]).split(",")
-    
-    #get lead admins ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
-    leadAdmin = cursor.fetchone()
-    
-    #get owners ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
-    ownerID = cursor.fetchone()
-    
-    allowed = False
-    owner = False
-    
-    for x in admin_ids_array:
-        if x == str((ctx.message.author).id):
-            allowed = True
-    
-    if str((ctx.message.author).id) == ownerID[0]:
-        allowed = True
-        owner = True
-    elif str((ctx.message.author).id) == leadAdmin[0]:
-        allowed = True
-    
-    if allowed == True:
-        try:
-            split_command = ctx.message.content.split()
-            del split_command[0]
-            rule_number = split_command[0] 
-            
-            #find if rule is in the db already
-            cursor.execute("SELECT count(*) FROM rules WHERE number = ?",(rule_number,))
-            find = cursor.fetchone()[0]
-
-            if find>0:
-                cursor.execute("DELETE FROM rules WHERE number = " + rule_number)
-                db.commit()
-                await ctx.send("The rule " + rule_number + " has been deleted", delete_after=6.0)
-            
-            else:
-                
-                await ctx.send("That rule ID (" + rule_number + ") doesn't exist, please use an existing one or create rule " + rule_number + ".", delete_after=6.0)
-                return
-        except:
-            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!delrule {id} {description}` eg. `!delrule 15`")
-            traceback.print_exc()
-    else:
-        Send = await ctx.send("You don't have permission to use the command `delrule`")
-
 #add a rule
 @bot.command()
 async def addrule(ctx): 
