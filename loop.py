@@ -66,7 +66,8 @@ async def on_ready():
         
         if str(active[0]) == "True":
             
-            print("checking (interval of "+ find[0] +" seconds)")
+            
+            print(str(datetime.datetime.now() + " - checking (interval of "+ find[0] +" seconds)")
             
             #get channel ID from db
             cursor.execute("SELECT value_key FROM config WHERE value = ?",("notification_channel",))
