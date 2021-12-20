@@ -158,7 +158,7 @@ async def delrule(ctx,rule_number):
                 #await ctx.send("That rule ID (" + str(rule_number) + ") doesn't exist, please use an existing one or create rule " + str(rule_number) + ".", delete_after=6.0)
                 return
         except:
-            await ctx.send("Please ensure you have formatted the command correctly\n`!delrule {id} {description}` eg. `!delrule 15`")
+            await ctx.send("Please ensure you have formatted the command correctly\n`/delrule {id} {description}` eg. `/delrule 15`")
             traceback.print_exc()
     else:
         await ctx.send("You don't have permission to use the command `delrule`")
@@ -205,7 +205,7 @@ async def addrule(ctx,rule_number,rule_description):
             else:
                 await ctx.send("The rule must be less than 4096 characters")
         except:
-            await ctx.send("Please ensure you have formatted the command correctly\n`!addrule {id} {description}` eg. `!addrule 15 Follow Discord TOS`")
+            await ctx.send("Please ensure you have formatted the command correctly\n`/addrule {id} {description}` eg. `/addrule 15 Follow Discord TOS`")
             traceback.print_exc()
     else:
         await ctx.send("You don't have permission to use the command `addrule`")
@@ -271,10 +271,9 @@ async def setmessage(ctx,message):
             else:
                 await ctx.send("The message must be less than 2000 characters")
         except:
-            await ctx.send("Please ensure you have formatted the command correctly\n`!setmessage {message}` eg. `!setmessage Hey, a new article has been released!`")
+            await ctx.send("Please ensure you have formatted the command correctly\n`/setmessage {message}` eg. `/setmessage Hey, a new article has been released!`")
     else:
         await ctx.send("You don't have permission to use the command `setmessage`")
-
 
 
 def check_permissions(user,required_perms):
@@ -373,9 +372,7 @@ def check_if_admin(user):
         return False
 
 
-
 '''
-
 #change remove an admin ID for the bot
 @bot.command()
 async def removeadmin(ctx): 
