@@ -435,9 +435,7 @@ async def setrulechannel(ctx,channel):
         )
     ])
 async def removeadmin(ctx,admin): 
-        
-    print(admin)
-    
+            
     # check if the user has lead admin permissions or higher
     allowed = check_permissions(ctx.author.user.id,"lead_admin")
     
@@ -480,9 +478,69 @@ async def removeadmin(ctx,admin):
             else:
                 await ctx.send("the user <@!" + str(admin) + "> isn't an admin therefore cannot be removed")
         except:
-            await ctx.send("Looks like there has been an error on ourside, please try again later")
+            await ctx.send("Looks like there has been an error on our side, please try again later")
     else:
         await ctx.send("You don't have permission to use the command `removeadmin`")
+
+#change add an admin ID for the bot
+@bot.command(
+    name="addadmin",
+    description="Add a user to the admin list",
+    scope=guilds,
+    options=[
+        interactions.Option(    
+            type=interactions.OptionType.USER,
+            name="admin",
+            description="The user you would like to give admin privileges to",
+            required=True,
+        )
+    ])
+async def addadmin(ctx,admin): 
+    
+    # check if the user has lead admin permissions or higher
+    allowed = check_permissions(ctx.author.user.id,"lead_admin")
+
+    if allowed == True:
+       
+        try:
+
+            #get admin IDs from db
+            cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
+            admin_ids_array = cursor.fetchone()
+
+            admin_ids_array = admin_ids_array[0].split(",")
+            
+            in_array_bool = False
+
+            # check if the admin ID is in the array
+            for x in admin_ids_array:
+                if str(admin) == x:
+                    in_array_bool = True
+
+            if in_array_bool == True:
+                await ctx.send("the user <@!" + str(admin) + "> is already an admin in relation to the bot")
+            else:
+                admin_ids_string = ""
+
+                print(admin_ids_array)
+
+                # create a new string of admins to be added to the db
+                if len(admin_ids_array) > 0 and len(admin_ids_array[0]) > 16:
+                    for x in admin_ids_array:
+                        admin_ids_string += x + ","
+                
+                admin_ids_string += str(admin)
+                
+                #updating the database
+                cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(admin_ids_string,"admin_ids"))
+                db.commit()
+                await ctx.send("the user <@!" + str(admin) + "> is now an admin in relation to the bot")
+                
+        except:
+            await ctx.send("Looks like there has been an error on our side, please try again later")
+    else:
+        await ctx.send("You don't have permission to use the command `addadmin`")
+
 
 def check_permissions(user,required_perms):
     # this checks three permission levels, admin, lead_admin and owner
@@ -578,80 +636,5 @@ def check_if_admin(user):
     else:
         # otherwise return false
         return False
-
-
-
-'''
-
-#change add an admin ID for the bot
-@bot.command()
-async def addadmin(ctx): 
-    try:
-        #delete the senders message
-        await ctx.message.delete()
-    except Exception:
-        print("not deleting message due to it being in a DM")
-    
-    #get admin IDs from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
-    admin_ids_array = cursor.fetchone()
-    
-    admin_ids_sting = ""
-    
-    for x in admin_ids_array:
-        admin_ids_sting = admin_ids_sting + x + ","
-        
-    
-    #get lead admins ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
-    leadAdmin = cursor.fetchone()
-    
-    #get owners ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
-    ownerID = cursor.fetchone()
-    
-    allowed = False
-    
-
-    if str((ctx.message.author).id) == ownerID[0]:
-        allowed = True
-
-    elif str((ctx.message.author).id) == leadAdmin[0]:
-        allowed = True
-    
-    if allowed == True:
-        split_command = ctx.message.content.split()
-        
-        try:
-            if len(split_command[1]) == 18:
-                if split_command[1] in admin_ids_sting:
-                    Send = await ctx.send("the user <@!" + split_command[1] + "> is already an admin in relation to the bot")
-                else:
-                    admin_ids_sting = admin_ids_sting + split_command[1]
-                    
-                    #updating the database
-                    cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(admin_ids_sting,"admin_ids"))
-                    db.commit()
-                    Send = await ctx.send("the user <@!" + split_command[1] + "> is now an admin in relation to the bot")
-            elif len(split_command[1]) == 22:
-                id_array_start = split_command[1].split("<@!")
-                id_final = id_array_start[1].split(">")
-                
-                if id_final[0] in admin_ids_sting:
-                    Send = await ctx.send("the user " + split_command[1] + " is already an admin in relation to the bot")
-                else:
-                    admin_ids_sting = admin_ids_sting + id_final[0]
-                    
-                    #updating the database
-                    cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(admin_ids_sting,"admin_ids"))
-                    db.commit()
-                    Send = await ctx.send("the user " + split_command[1] + " is now an admin in relation to the bot")
-                
-        except:
-            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!addadmin @user` or `!addadmin 123456789012345678`")
-    else:
-        Send = await ctx.send("You don't have permission to use the command `addadmin`")
-
-'''
     
 bot.start()
