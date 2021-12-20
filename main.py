@@ -122,6 +122,102 @@ async def help(ctx):
 
     await ctx.send("These commands may not all work, the bot is currently still being transitioned over to a new APIWrapper",embeds=help_embed)
 
+def check_permissions(user,required_perms):
+    # this checks three permission levels, admin, lead_admin and owner
+
+    # if the function has requested to check if the user is an admin, use the statement below
+    if required_perms.lower() == "admin":
+        # compare the given user's ID to the admin permissions and all those that rank above them
+        admin_bool = check_if_admin(user)
+        lead_admin_bool = check_if_leadadmin(user)
+        owner_bool = check_if_owner(user)
+
+        # if the user is any of the above, return true, confirming the user has the required permissions
+        if admin_bool or lead_admin_bool or owner_bool:
+            return True
+        else:
+            # otherwise return false
+            return False
+    elif required_perms.lower() == "lead_admin":
+
+        # for lead admin, do the same as above but this time don't check for the admin permission (as lead admin obviously has high permissions than admin)
+        lead_admin_bool = check_if_leadadmin(user)
+        owner_bool = check_if_owner(user)
+
+        # if the user is a lead admin or the owner, return true, confirming the user has the required permissions
+        if lead_admin_bool or owner_bool:
+            return True
+        else:
+            # otherwise return false
+            return False
+    elif required_perms.lower() == "owner":
+
+        # for owner, do the same as above but this time don't check for the admin or lead admin permission (as owner obviously has high permissions than lead admin and admin, mainly for fixing issues and whatnot)
+        owner_bool = check_if_owner(user)
+
+        # if the user is the owner, return true, confirming the user has the required permissions
+        if owner_bool:
+            return True
+        else:
+            # otherwise return false
+            return False
+    else:
+        # if there has been any issue such as the function being called to check a non-existent permission level, return None
+        return None
+
+def check_if_owner(user):
+
+    # get the owners id from the db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
+    ownerID = cursor.fetchone()
+
+    # compare the ID passed into this function with the ID collected above
+    if str(user) == ownerID[0]:
+        # if it matches, return true
+        return True
+    else:
+        # otherwise return false
+        return False
+
+def check_if_leadadmin(user):
+    #get lead admins ID from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
+    leadAdmin = cursor.fetchone()
+
+    # compare the ID passed into this function with the ID collected above
+    if str(user) == leadAdmin[0]:
+        # if it matches, return true
+        return True
+    else:
+        # otherwise return false
+        return False
+
+def check_if_admin(user):
+
+    # this should be recieving the users ID
+
+    #get admin IDs from db
+    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
+    admin_ids = cursor.fetchone()
+    admin_ids_array = str(admin_ids[0]).split(",")
+
+    # use this boolean to check if it has been found after looping through the array
+    admin = False
+
+    # for each ID in the array, check if the ID passed into this function matches
+    for x in admin_ids_array:
+        if x == str(user):
+            # if it matches, set the boolean to true
+            admin = True
+    
+    # if the boolean has been set to true, return true
+    if admin == True:
+        return True
+    else:
+        # otherwise return false
+        return False
+    
+
     
 '''
 #delete a rule
