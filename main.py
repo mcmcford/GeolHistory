@@ -395,6 +395,94 @@ async def setchannel(ctx,channel):
     else:
         Send = await ctx.send("You don't have permission to use the command `setchannel`")
 
+#change the notification channel for the bot
+@bot.command(
+    name="setrulechannel",
+    description="Change the channel that the server rules are shown in",
+    scope=guilds,
+    options=[
+        interactions.Option(    
+            type=interactions.OptionType.CHANNEL,
+            name="channel",
+            description="The channel you would like to declare as the rules channel",
+            required=True,
+        )
+    ])
+async def setrulechannel(ctx,channel): 
+    
+    # check if the user has admin permissions or higher
+    allowed = check_permissions(ctx.author.user.id,"admin")
+    
+    if allowed == True:
+        #updating the database
+        cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(channel,"rules_channel"))
+        db.commit()
+        await ctx.send("Rules channel updated to <#" + str(channel) + ">")
+    else:
+        Send = await ctx.send("You don't have permission to use the command `setrulechannel`")
+
+#change remove an admin ID for the bot
+@bot.command(
+    name="removeadmin",
+    description="Remove a user from the admin list",
+    scope=guilds,
+    options=[
+        interactions.Option(    
+            type=interactions.OptionType.USER,
+            name="admin",
+            description="The admin you would like to remove privileges from",
+            required=True,
+        )
+    ])
+async def removeadmin(ctx,admin): 
+        
+    print(admin)
+    
+    # check if the user has lead admin permissions or higher
+    allowed = check_permissions(ctx.author.user.id,"lead_admin")
+    
+    if allowed == True:
+        
+        try:
+            #get admin IDs from db
+            cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
+            admin_ids_array = cursor.fetchone()
+
+            admin_ids_array = admin_ids_array[0].split(",")
+            
+            in_array_bool = False
+
+            # check if the admin ID is in the array
+            for x in admin_ids_array:
+                if str(admin) == x:
+                    in_array_bool = True
+            
+
+            if in_array_bool == True:
+                
+                # remove the admin ID from the array
+                admin_ids_array.remove(str(admin))
+                
+                # declare the blank string 'admin_ids_string'
+                admin_ids_string = ""
+
+                # create a new string of admins to be added to the db
+                for x in admin_ids_array:
+                    if x == admin_ids_array[-1]:
+                        admin_ids_string += x
+                    else:
+                        admin_ids_string += x + ","
+                
+                #updating the database
+                cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(admin_ids_string,"admin_ids"))
+                db.commit()
+                await ctx.send("the user <@!" + str(admin) + "> is no longer an admin in relation to the bot")
+            else:
+                await ctx.send("the user <@!" + str(admin) + "> isn't an admin therefore cannot be removed")
+        except:
+            await ctx.send("Looks like there has been an error on ourside, please try again later")
+    else:
+        await ctx.send("You don't have permission to use the command `removeadmin`")
 
 def check_permissions(user,required_perms):
     # this checks three permission levels, admin, lead_admin and owner
@@ -493,91 +581,7 @@ def check_if_admin(user):
 
 
 
-
 '''
-#change remove an admin ID for the bot
-@bot.command()
-async def removeadmin(ctx): 
-    try:
-        #delete the senders message
-        await ctx.message.delete()
-    except Exception:
-        print("not deleting message due to it being in a DM")
-    
-    #get admin IDs from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
-    admin_ids_array = cursor.fetchone()
-    
-    admin_ids_sting = ""
-    
-    for x in admin_ids_array:
-        admin_ids_sting = admin_ids_sting + x + ","
-        
-    
-    #get lead admins ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
-    leadAdmin = cursor.fetchone()
-    
-    #get owners ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
-    ownerID = cursor.fetchone()
-    
-    allowed = False
-    
-
-    if str((ctx.message.author).id) == ownerID[0]:
-        allowed = True
-
-    elif str((ctx.message.author).id) == leadAdmin[0]:
-        allowed = True
-    
-    if allowed == True:
-        split_command = ctx.message.content.split()
-        
-        
-        try:
-            if len(split_command[1]) == 18:
-                
-                if split_command[1] in admin_ids_sting:
-                    
-                
-                    admin_ids_sting = admin_ids_sting.replace(str(split_command[1]) + ",", '')
-                    
-                    if admin_ids_sting[-1] == ',':
-                        admin_ids_sting = admin_ids_sting.rstrip(admin_ids_sting[-1])
-                    
-                    #updating the database
-                    cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(admin_ids_sting,"admin_ids"))
-                    db.commit()
-                    Send = await ctx.send("the user <@!" + split_command[1] + "> is no longer an admin in relation to the bot")
-                else:
-                    Send = await ctx.send("the user <@!" + split_command[1] + "> isn't an admin therefore cannot be removed")
-            
-            elif len(split_command[1]) == 22:
-                id_array_start = split_command[1].split("<@!")
-                id_final = id_array_start[1].split(">")
-                
-                if id_final[0] in admin_ids_sting:
-                    admin_ids_sting = admin_ids_sting.replace(str(id_final[0]) + ",", '')
-                    
-                    
-                    if admin_ids_sting[-1] == ',':
-                        admin_ids_sting = admin_ids_sting.rstrip(admin_ids_sting[-1])
-                    
-                    
-                    #updating the database
-                    cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(admin_ids_sting,"admin_ids"))
-                    db.commit()
-                    Send = await ctx.send("the user <@!" + id_final[0] + "> is no longer an admin in relation to the bot")
-                else:
-                    Send = await ctx.send("the user <@!" + id_final[0] + "> isn't an admin therefore cannot be removed")
-                
-            else:
-                Send = await ctx.send("Please ensure you have formatted the command correctly\n`!removeadmin @user` or `!removeadmin 123456789012345678`")
-        except:
-            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!removeadmin @user` or `!removeadmin 123456789012345678`")
-    else:
-        Send = await ctx.send("You don't have permission to use the command `removeadmin`")
 
 #change add an admin ID for the bot
 @bot.command()
@@ -647,78 +651,6 @@ async def addadmin(ctx):
             Send = await ctx.send("Please ensure you have formatted the command correctly\n`!addadmin @user` or `!addadmin 123456789012345678`")
     else:
         Send = await ctx.send("You don't have permission to use the command `addadmin`")
-
-
-#change the notification channel for the bot
-@bot.command()
-async def setrulechannel(ctx): 
-    
-    try:
-        #delete the senders message
-        await ctx.message.delete()
-    except Exception:
-        print("not deleting message due to it being in a DM")
-    
-    #get admin IDs from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
-    admin_ids = cursor.fetchone()
-    admin_ids_array = str(admin_ids[0]).split(",")
-    
-    #get lead admins ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
-    leadAdmin = cursor.fetchone()
-    
-    #get owners ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
-    ownerID = cursor.fetchone()
-    
-    allowed = False
-    owner = False
-    
-    for x in admin_ids_array:
-        if x == str((ctx.message.author).id):
-            allowed = True
-    
-    if str((ctx.message.author).id) == ownerID[0]:
-        allowed = True
-        owner = True
-    elif str((ctx.message.author).id) == leadAdmin[0]:
-        allowed = True
-    
-    if allowed == True:
-        #print(ctx.message.content)
-        
-        split_command = ctx.message.content.split()
-        
-        try:
-            if len(split_command[1]) == 18:
-                if type(int(split_command[1])) is int:
-                    #updating the database
-                    cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(split_command[1],"rules_channel"))
-                    db.commit()
-                    Send = await ctx.send("Rules channel updated to <#" + split_command[1] + ">")
-                else:
-                    Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setrulechannel #channel` or `!setrulechannel 123456789012345678`")
-            elif len(split_command[1]) == 21:
-                if str((split_command[1])[0]) == "<" and str((split_command[1])[1]) == "#":
-                    new_channel_array = (split_command[1]).split("#")
-                    new_channel_array_final = (new_channel_array[1]).split(">")
-                    
-                    #updating the database
-                    cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(new_channel_array_final[0],"rules_channel"))
-                    db.commit()
-                    Send = await ctx.send("Rules channel updated to " + split_command[1])
-                else:
-                    Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setrulechannel #channel` or `!setrulechannel 123456789012345678`")
-                
-            else:
-                Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setrulechannel #channel` or `!setrulechannel 123456789012345678`")
-            
-        except:
-            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setrulechannel #channel` or `!setrulechannel 123456789012345678`")
-    else:
-        Send = await ctx.send("You don't have permission to use the command `setrulechannel`")
-
 
 '''
     
