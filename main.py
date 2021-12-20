@@ -371,6 +371,64 @@ def check_if_admin(user):
         # otherwise return false
         return False
 
+#change the auto refresh interval for the bot
+@bot.command(    
+    name="setinterval",
+    description="change the auto refresh interval for the RSS feeds",
+    scope=guilds,
+    options=[
+        interactions.Option(    
+            type=interactions.OptionType.INTEGER,
+            name="seconds",
+            description="The interval (in seconds) you would like to set",
+            required=True,
+            min_value = 1,
+            max_value = 31536002,
+        )
+    ])
+async def setinterval(ctx,seconds): 
+    
+    # check if the user has admin permissions or higher
+    allowed = check_permissions(ctx.author.user.id,"admin")
+    
+    # if true, allow them to change the interval
+    if allowed == True:
+        try:
+            # check if the user has owner permissions (for if they want to change the interval below the minimum of 60)
+            owner = check_permissions(ctx.author.user.id,"owner")
+            
+            if int(seconds) > 31536001 or int(seconds) < 1:
+                # the bot shouldn't allow the user to enter values outside of these bounds but just in case
+                await ctx.send("Please ensure you have set the interval within the bounds listed below\n**Min** = `1`\n**Max** = `31,536,001`")
+
+            # if anyone other than the owner tries to set the interval below 60, tell them they can't as this may cause issues such as excessive network traffic
+            elif int(seconds) < 60 and owner == False:
+
+                # get the owner ID from the db so it can be used below when mentioning them
+                cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
+                ownerID = cursor.fetchone()
+
+                await ctx.send("Only the bot owner (<@!" + ownerID[0] + ">) can set the interval below 60 seconds")
+            # if the interval is out of bounds but set by the owner, allow it
+            elif int(seconds) < 60 and int(seconds) > 0 and owner == True:
+                #updating the database
+                cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(seconds,"timeperiod"))
+                db.commit()
+                await ctx.send("Auto checking interval updated to " + str(seconds))
+            # if the interval is within bounds, allow it
+            elif int(seconds) > 59 and int(seconds) < 31536002:
+                #updating the database
+                cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(seconds,"timeperiod"))
+                db.commit()
+                await ctx.send("Auto checking interval updated to " + str(seconds))
+        except:
+            # if there was any kind of error print this
+            await ctx.send("Please ensure you have formatted the command correctly\n`/setinterval 123`")
+    # if the user simply doesn't have permissions, print this message
+    else:
+        await ctx.send("You don't have permission to use the command `setinterval`")
+
+
 
 '''
 #change remove an admin ID for the bot
@@ -722,67 +780,6 @@ async def setchecking(ctx):
             Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setchecking True` or `!setchecking False`")
     else:
         Send = await ctx.send("You don't have permission to use the command `setchecking`")
-
-#change the auto refresh interval for the bot
-@bot.command()
-async def setinterval(ctx): 
-    
-    try:
-        #delete the senders message
-        await ctx.message.delete()
-    except Exception:
-        print("not deleting message due to it being in a DM")
-    
-    #get admin IDs from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
-    admin_ids = cursor.fetchone()
-    admin_ids_array = str(admin_ids[0]).split(",")
-    
-    #get lead admins ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
-    leadAdmin = cursor.fetchone()
-    
-    #get owners ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
-    ownerID = cursor.fetchone()
-    
-    allowed = False
-    owner = False
-    
-    for x in admin_ids_array:
-        if x == str((ctx.message.author).id):
-            allowed = True
-    
-    if str((ctx.message.author).id) == ownerID[0]:
-        allowed = True
-        owner = True
-    elif str((ctx.message.author).id) == leadAdmin[0]:
-        allowed = True
-    
-    if allowed == True:
-        try:
-            split_command = ctx.message.content.split()
-            
-            if int(split_command[1]) > 31536001 or int(split_command[1]) < 1:
-                Send = await ctx.send("Please ensure you have set the interval within the bounds listed below\n**Min** = `1`\n**Max** = `31,536,001`")
-            elif int(split_command[1]) < 60 and owner == False:
-                Send = await ctx.send("Only the bot owner (<@!" + ownerID[0] + ">) can set the interval below 60 seconds")
-            elif int(split_command[1]) < 60 and int(split_command[1]) > 0 and owner == True:
-                #updating the database
-                cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(split_command[1],"timeperiod"))
-                db.commit()
-                Send = await ctx.send("Auto checking interval updated to " + split_command[1])
-            elif int(split_command[1]) > 59 and int(split_command[1]) < 31536002:
-                #updating the database
-                cursor.execute("UPDATE config SET value_key = (?) WHERE value = (?)",(split_command[1],"timeperiod"))
-                db.commit()
-                Send = await ctx.send("Auto checking interval updated to " + split_command[1])
-        except:
-            Send = await ctx.send("Please ensure you have formatted the command correctly\n`!setinterval 123`")
-        
-    else:
-        Send = await ctx.send("You don't have permission to use the command `setinterval`")
-
 
 '''
     
