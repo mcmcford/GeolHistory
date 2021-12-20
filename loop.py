@@ -50,6 +50,7 @@ async def on_ready():
     """On ready event!"""
     print("Logged in as " + str(bot.user))
     print("User ID: " + str(bot.user.id))
+    await bot.change_presence(activity=discord.Game(name="Now with slash commands!"))
 
     # Infinite loop since this script should never really stop
     while True:

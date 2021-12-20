@@ -522,8 +522,6 @@ async def addadmin(ctx,admin):
             else:
                 admin_ids_string = ""
 
-                print(admin_ids_array)
-
                 # create a new string of admins to be added to the db
                 if len(admin_ids_array) > 0 and len(admin_ids_array[0]) > 16:
                     for x in admin_ids_array:
