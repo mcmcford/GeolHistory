@@ -210,6 +210,38 @@ async def addrule(ctx,rule_number,rule_description):
     else:
         await ctx.send("You don't have permission to use the command `addrule`")
 
+#see all the current configs for the bot
+@bot.command(
+    name="config",
+    description="View all the config values for the bot",
+    scope=guilds)
+async def config(ctx):
+    
+    allowed = check_permissions(ctx.author.user.id,"admin")
+
+    if allowed == True:
+        #get all the values from db
+        cursor.execute("SELECT * FROM config;")
+        config_truple = cursor.fetchall()
+        config_array = np.array(config_truple)
+                        
+        fields_list = []
+
+        #loop to add all values from DB to the embed
+        for x in range(len(config_array)):
+            
+            fields_list.append(interactions.EmbedField(name= str(config_array[x][0]) + "\n(" + str(config_array[x][2]) + "):" , value= "`" + str(config_array[x][1]) + "`", inline=False)._json)
+        
+        #building the embed
+        config_embed = interactions.Embed(
+            title="Current Configuration",  
+            color=0x28a4fd,
+            fields=fields_list)
+
+        await ctx.send(embeds=config_embed)
+    
+    else:
+        await ctx.send("You don't have permission to use the command `config`")
 
 def check_permissions(user,required_perms):
     # this checks three permission levels, admin, lead_admin and owner
@@ -776,69 +808,6 @@ async def setinterval(ctx):
     else:
         Send = await ctx.send("You don't have permission to use the command `setinterval`")
 
-#see all the current configs for the bot
-@bot.command()
-async def config(ctx):
-    try:
-        #delete the senders message
-        await ctx.message.delete()
-    except Exception:
-        print("not deleting message due to it being in a DM")
-        
-    
-    #get admin IDs from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("admin_ids",))
-    admin_ids = cursor.fetchone()
-    admin_ids_array = str(admin_ids[0]).split(",")
-    
-    #get lead admins ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("lead_admin",))
-    leadAdmin = cursor.fetchone()
-    
-    #get owners ID from db
-    cursor.execute("SELECT value_key FROM config WHERE value = ?",("owner_id",))
-    ownerID = cursor.fetchone()
-    
-    allowed = False
-    owner = False
-    
-    for x in admin_ids_array:
-        if x == str((ctx.message.author).id):
-            allowed = True
-    
-    if str((ctx.message.author).id) == ownerID[0]:
-        allowed = True
-        owner = True
-    elif str((ctx.message.author).id) == leadAdmin[0]:
-        allowed = True
-    
-    if allowed == True:
-        #get all the values from db
-        cursor.execute("SELECT * FROM config;")
-        config_truple = cursor.fetchall()
-        config_array = np.array(config_truple)
-        
-        
-        #getting the nickname of the person who ran the command / made the quote
-        userValue = await bot.fetch_user((ctx.message.author).id)
-        summonersName = userValue.name
-        
-        #building the embed
-        style = discord.Embed(name="config notification", title="Current Configuration", timestamp=datetime.datetime.utcnow(), color=0x28a4fd)
-        style.set_footer(text = "summoned by " + summonersName)
-        
-        #loop to add all values from DB to the embed
-        for x in range(len(config_array)):
-            value_one = str(config_array[x][0])
-            value_two = str(config_array[x][1])
-            value_three = str(config_array[x][2])
-            
-            style.add_field(name= value_one + "\n(" + value_three + "):" , value= "`" + value_two + "`", inline=False)
-        
-        Send = await ctx.send(embed=style)
-    
-    else:
-        Send = await ctx.send("You don't have permission to use the command `config`")
 
 '''
     
