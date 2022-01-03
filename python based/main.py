@@ -46,7 +46,7 @@ async def on_ready():
     description="This command will return the bots ping",
     scope=guilds)
 async def ping(ctx):
-    latency = ctx.bot.latency
+    latency = interactions.ping
     latency = latency * 1000
     latency = round(latency)
     await ctx.send("My ping is **{}ms**!".format(latency))
@@ -634,5 +634,5 @@ def check_if_admin(user):
     else:
         # otherwise return false
         return False
-    
+
 bot.start()
